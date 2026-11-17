@@ -1,0 +1,33 @@
+# ============================================================
+# Git Ignore for AI Crop Advisor
+# ============================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Large training dataset images and agricultural reference PDFs (~1.8 GB)
+# Quick test samples are preserved inside project-fai/static/samples/
+data/images/
+data/pdfs/
+data/train*.csv
+
+# Environment & credentials
+.env
+*.local
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Vercel build output
+.vercel

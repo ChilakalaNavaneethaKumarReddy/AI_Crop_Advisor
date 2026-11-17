@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Crop Advisor — Intelligent Crop Disease Detection</title>
+    <meta name="description" content="AI-powered crop disease detection for Paddy, Cotton, and Chilli using MobileNetV2 CNN">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- Favicon (leaf emoji as SVG) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+</head>
+<body>
+
+    <!-- ========== NAVBAR ========== -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="#" class="nav-brand">
+                <div class="nav-logo">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                <span class="nav-title">AI Crop Advisor</span>
+            </a>
+            <div class="nav-links">
+                <a href="#analyzer" class="nav-link">Analyzer</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="#crops" class="nav-link">Crops</a>
+            </div>
+            <button class="nav-mobile-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ========== HERO SECTION ========== -->
+    <section class="hero" id="home">
+        <div class="hero-bg-pattern"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-glow-orb hero-glow-1"></div>
+        <div class="hero-glow-orb hero-glow-2"></div>
+        
+        <div class="container hero-container">
+            <!-- Left Hero Content -->
+            <div class="hero-left">
+                <div class="hero-badge animate-fade-in">
+                    <span class="pulse-dot"></span>
+                    <i class="fas fa-microchip"></i>
+                    <span>MobileNetV2 CNN • Transfer Learning Architecture</span>
+                </div>
+                
+                <h1 class="hero-title animate-fade-in-up">
+                    Intelligent Crop<br>
+                    <span class="text-gradient">Disease Detection</span><br>
+                    <span class="hero-title-sub">&amp; Real-Time Field Advisory</span>
+                </h1>
+                
+                <p class="hero-subtitle animate-fade-in-up delay-1">
+                    Upload a leaf photograph to obtain instant pathology screening 
+                    with actionable Integrated Pest Management (IPM) advisories specifically calibrated 
+                    for Indian farming conditions.
+                </p>
+
+                <!-- Interactive Crop Selection Pills -->
+                <div class="hero-crops animate-fade-in-up delay-2">
+                    <div class="crop-pill" data-crop="paddy">
+                        <span class="crop-emoji">🌾</span>
+                        <div class="crop-meta">
+                            <strong>Paddy (Rice)</strong>
+                            <small>10 Disease Classes</small>
+                        </div>
+                    </div>
+                    <div class="crop-pill" data-crop="cotton">
+                        <span class="crop-emoji">🌿</span>
+                        <div class="crop-meta">
+                            <strong>Cotton</strong>
+                            <small>4 Disease Classes</small>
+                        </div>
+                    </div>
+                    <div class="crop-pill" data-crop="chilli">
+                        <span class="crop-emoji">🌶️</span>
+                        <div class="crop-meta">
+                            <strong>Chilli</strong>
+                            <small>5 Disease Classes</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA Action Buttons -->
+                <div class="hero-actions animate-fade-in-up delay-3">
+                    <a href="#analyzer" class="btn btn-hero-primary">
+                        <i class="fas fa-camera"></i>
+                        <span>Start Disease Analysis</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="#crops" class="btn btn-hero-secondary">
+                        <i class="fas fa-book-open"></i>
+                        <span>View 19 Classes</span>
+                    </a>
+                </div>
+
+                <!-- Quick Metrics Grid -->
+                <div class="hero-stats animate-fade-in-up delay-4">
+                    <div class="stat-item">
+                        <span class="stat-number">12,648</span>
+                        <span class="stat-label">Leaf Images</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">19</span>
+                        <span class="stat-label">Target Classes</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">&lt;0.5s</span>
+                        <span class="stat-label">Inference Time</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">60%</span>
+                        <span class="stat-label">Safety Gate</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Hero Interactive Showcase -->
+            <div class="hero-right animate-fade-in-up delay-2">
+                <div class="scanner-card">
+                    <div class="scanner-header">
+                        <div class="scanner-status">
+                            <span class="scanner-live-dot"></span>
+                            <span>AI Diagnostic Vision Scanner</span>
+                        </div>
+                        <span class="scanner-chip">MobileNetV2</span>
+                    </div>
+
+                    <!-- Scanner Viewport with Scan Beam & Reticle -->
+                    <div class="scanner-viewport">
+                        <div class="scan-grid"></div>
+                        <div class="scan-laser"></div>
+                        
+                        <!-- Target Image -->
+                        <img id="heroScannerImg" src="/sample-image/0" alt="Crop Leaf Scan Preview" class="scanner-image">
+                        
+                        <!-- AI Detection Hotspot / Reticle -->
+                        <div class="scanner-reticle" id="scannerReticle">
+                            <div class="reticle-pulse"></div>
+                            <div class="reticle-label">
+                                <i class="fas fa-crosshairs"></i>
+                                <span id="reticleLabel">Lesion: Xanthomonas citri</span>
+                            </div>
+                        </div>
+
+                        <!-- Floating Glassmorphic Badges -->
+                        <div class="floating-badge badge-top-right">
+                            <i class="fas fa-shield-alt icon-emerald"></i>
+                            <div>
+                                <strong id="heroBadgeMatch">99.86% Match</strong>
+                                <small id="heroBadgeCondition">Cotton Bacterial Blight</small>
+                            </div>
+                        </div>
+
+                        <div class="floating-badge badge-bottom-left">
+                            <i class="fas fa-check-circle icon-emerald"></i>
+                            <div>
+                                <strong>Leaf Validated</strong>
+                                <small>Passed HSV Heuristic</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Showcase Sample Selector -->
+                    <div class="scanner-controls">
+                        <span class="controls-label"><i class="fas fa-hand-pointer"></i> Try a Sample Leaf:</span>
+                        <div class="sample-pills">
+                            <button class="sample-btn active" data-id="0" data-label="Cotton Bacterial Blight" data-match="99.86% Match" data-reticle="Lesion: Xanthomonas citri">Cotton Blight</button>
+                            <button class="sample-btn" data-id="1" data-label="Paddy Blast" data-match="99.21% Match" data-reticle="Spindle Lesion: Magnaporthe">Paddy Blast</button>
+                            <button class="sample-btn" data-id="2" data-label="Chilli Cercospora" data-match="98.74% Match" data-reticle="Frogeye Spot: Cercospora">Chilli Spot</button>
+                            <button class="sample-btn" data-id="3" data-label="Chilli Healthy" data-match="99.50% Match" data-reticle="Uniform Green Foliage">Chilli Healthy</button>
+                        </div>
+                        <button class="btn-load-sample" id="heroLoadSampleBtn">
+                            <i class="fas fa-bolt"></i> Load This Sample into Analyzer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Features Ribbon at Bottom of Hero -->
+        <div class="hero-ribbon">
+            <div class="container ribbon-container">
+                <div class="ribbon-item"><i class="fas fa-check-circle"></i> MobileNetV2 Deep CNN</div>
+                <div class="ribbon-item"><i class="fas fa-shield-alt"></i> 60% Confidence Safety Gate</div>
+                <div class="ribbon-item"><i class="fas fa-leaf"></i> Biological &amp; Neem Alternatives</div>
+                <div class="ribbon-item"><i class="fas fa-flask"></i> Approved Pesticides in India</div>
+                <div class="ribbon-item"><i class="fas fa-map-marker-alt"></i> Soil-Specific Agronomic Guidance</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== HOW IT WORKS ========== -->
+    <section id="how-it-works" class="how-section">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Three simple steps to diagnose crop diseases</p>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon"><i class="fas fa-camera"></i></div>
+                    <h3>Capture</h3>
+                    <p>Take a close-up photo of the affected crop leaf showing clear symptoms</p>
+                </div>
+                <div class="step-connector">
+                    <div class="connector-line"></div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon"><i class="fas fa-brain"></i></div>
+                    <h3>Analyze</h3>
+                    <p>Our MobileNetV2 CNN model processes the image and identifies the disease</p>
+                </div>
+                <div class="step-connector">
+                    <div class="connector-line"></div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon"><i class="fas fa-clipboard-list"></i></div>
+                    <h3>Advisory</h3>
+                    <p>Get detailed IPM management recommendations tailored to your conditions</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== MAIN ANALYZER ========== -->
+    <section id="analyzer" class="analyzer-section">
+        <div class="container">
+            <div class="section-header-centered">
+                <h2 class="section-title">Disease Analyzer</h2>
+                <p class="section-subtitle">Upload a Paddy, Cotton, or Chilli leaf image for AI analysis</p>
+            </div>
+
+            <div class="analyzer-grid">
+                <!-- ===== LEFT: INPUT PANEL ===== -->
+                <div class="input-panel">
+
+                    <!-- Upload Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <i class="fas fa-cloud-upload-alt card-icon"></i>
+                                <h3>Upload Leaf Image</h3>
+                            </div>
+                            <span class="step-badge">Step 1</span>
+                        </div>
+
+                        <div class="upload-zone" id="uploadZone" tabindex="0" role="button" aria-label="Upload image">
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <div class="upload-icon-wrapper">
+                                    <div class="upload-icon-bg"></div>
+                                    <i class="fas fa-leaf upload-main-icon"></i>
+                                </div>
+                                <p class="upload-title">Drop your leaf image here</p>
+                                <p class="upload-subtitle">or <span class="upload-browse">click to browse</span></p>
+                                <div class="upload-formats">
+                                    <span><i class="fas fa-image"></i> JPG</span>
+                                    <span><i class="fas fa-image"></i> PNG</span>
+                                    <span><i class="fas fa-image"></i> WEBP</span>
+                                </div>
+                            </div>
+                            <div class="image-preview-container" id="imagePreview" style="display:none;">
+                                <img id="previewImg" src="" alt="Uploaded leaf preview">
+                                <button class="btn-remove-image" id="removeImg" title="Remove image">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <div class="preview-filename" id="previewFilename"></div>
+                            </div>
+                            <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/jpg" hidden>
+                        </div>
+                    </div>
+
+                    <!-- Field Conditions Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <i class="fas fa-sliders-h card-icon"></i>
+                                <h3>Field Conditions</h3>
+                            </div>
+                            <span class="step-badge">Step 2</span>
+                        </div>
+                        <p class="card-hint">Optional — enhances the AI advisory recommendations</p>
+
+                        <div class="conditions-grid">
+                            <div class="form-group">
+                                <label for="soilType">
+                                    <i class="fas fa-mountain"></i> Soil Type
+                                </label>
+                                <div class="select-wrapper">
+                                    <select id="soilType">
+                                        <option value="Unknown">Select soil type…</option>
+                                        <option value="Red Soil">Red Soil</option>
+                                        <option value="Black Cotton Soil">Black Cotton Soil</option>
+                                        <option value="Alluvial Soil">Alluvial Soil</option>
+                                        <option value="Laterite Soil">Laterite Soil</option>
+                                        <option value="Sandy Soil">Sandy Soil</option>
+                                    </select>
+                                    <i class="fas fa-chevron-down select-arrow"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="growthStage">
+                                    <i class="fas fa-seedling"></i> Growth Stage
+                                </label>
+                                <div class="select-wrapper">
+                                    <select id="growthStage">
+                                        <option value="Unknown">Select stage…</option>
+                                        <option value="Seedling">Seedling</option>
+                                        <option value="Vegetative">Vegetative</option>
+                                        <option value="Flowering">Flowering</option>
+                                        <option value="Fruiting/Boll Formation">Fruiting / Boll Formation</option>
+                                        <option value="Harvesting">Harvesting</option>
+                                    </select>
+                                    <i class="fas fa-chevron-down select-arrow"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="severity">
+                                    <i class="fas fa-exclamation-triangle"></i> Severity
+                                </label>
+                                <div class="select-wrapper">
+                                    <select id="severity">
+                                        <option value="Unknown">Estimate severity…</option>
+                                        <option value="Low (1-10%)">Low (1–10%)</option>
+                                        <option value="Moderate (10-30%)">Moderate (10–30%)</option>
+                                        <option value="High (>30%)">High (>30%)</option>
+                                    </select>
+                                    <i class="fas fa-chevron-down select-arrow"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Settings Toggle -->
+                        <button class="advanced-toggle" id="advancedToggle" type="button">
+                            <span><i class="fas fa-cog"></i> Advanced Settings</span>
+                            <i class="fas fa-chevron-down toggle-chevron" id="toggleChevron"></i>
+                        </button>
+                        <div class="advanced-content" id="advancedContent">
+                            <div class="form-group">
+                                <label for="apiKey">
+                                    <i class="fas fa-key"></i> Gemini API Key
+                                </label>
+                                <input type="password" id="apiKey" placeholder="Enter for dynamic AI advisory (optional)" class="form-input">
+                                <p class="form-hint"><i class="fas fa-info-circle"></i> Or set the GEMINI_API_KEY environment variable</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predict Button -->
+                    <button class="btn btn-predict" id="predictBtn" disabled>
+                        <span class="btn-text" id="btnText">
+                            <i class="fas fa-search-plus"></i> Analyze Disease
+                        </span>
+                        <span class="btn-loading" id="btnLoading" style="display:none;">
+                            <svg class="spinner" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="31.4" stroke-dashoffset="10">
+                                    <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
+                                </circle>
+                            </svg>
+                            Analyzing Image…
+                        </span>
+                    </button>
+
+                    <!-- Example Images -->
+                    {% if examples %}
+                    <div class="card examples-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <i class="fas fa-images card-icon"></i>
+                                <h3>Quick Test</h3>
+                            </div>
+                        </div>
+                        <p class="card-hint">Click any example to load it instantly</p>
+                        <div class="examples-grid">
+                            {% for example in examples %}
+                            <div class="example-item" data-id="{{ example.id }}" tabindex="0" role="button" aria-label="Load {{ example.label }}">
+                                <div class="example-img-wrapper">
+                                    <img src="/sample-image/{{ example.id }}" alt="{{ example.label }}" loading="lazy">
+                                    <div class="example-overlay">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </div>
+                                </div>
+                                <span class="example-label">{{ example.label }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- ===== RIGHT: RESULTS PANEL ===== -->
+                <div class="results-panel" id="resultsPanel">
+
+                    <!-- Empty State -->
+                    <div class="results-empty" id="resultsEmpty">
+                        <div class="empty-illustration">
+                            <div class="empty-circle"></div>
+                            <i class="fas fa-leaf empty-icon"></i>
+                        </div>
+                        <h3>Analysis Results</h3>
+                        <p>Upload a crop leaf image and click<br><strong>"Analyze Disease"</strong> to get started</p>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="results-error" id="resultsError" style="display:none;">
+                        <div class="error-icon-wrapper">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <h3>Analysis Error</h3>
+                        <p id="errorMessage"></p>
+                        <button class="btn btn-outline" id="retryBtn">
+                            <i class="fas fa-redo"></i> Try Again
+                        </button>
+                    </div>
+
+                    <!-- Results Content -->
+                    <div class="results-content" id="resultsContent" style="display:none;">
+
+                        <!-- Validation Badge -->
+                        <div class="validation-banner" id="validationBanner">
+                            <i class="fas fa-check-circle" id="validationIcon"></i>
+                            <span id="validationText">Valid crop-leaf image</span>
+                        </div>
+
+                        <!-- Prediction Summary Card -->
+                        <div class="card result-summary-card">
+                            <div class="summary-layout">
+                                <!-- Confidence Gauge -->
+                                <div class="gauge-container">
+                                    <svg class="gauge-svg" viewBox="0 0 140 140">
+                                        <defs>
+                                            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" style="stop-color:#059669"/>
+                                                <stop offset="100%" style="stop-color:#10B981"/>
+                                            </linearGradient>
+                                        </defs>
+                                        <circle class="gauge-track" cx="70" cy="70" r="58" fill="none" stroke="#E5E7EB" stroke-width="10"/>
+                                        <circle class="gauge-fill" id="gaugeFill" cx="70" cy="70" r="58" fill="none" stroke="url(#gaugeGradient)" stroke-width="10" stroke-linecap="round"
+                                            stroke-dasharray="364.42" stroke-dashoffset="364.42" transform="rotate(-90 70 70)"/>
+                                    </svg>
+                                    <div class="gauge-center">
+                                        <span class="gauge-value" id="gaugeValue">0%</span>
+                                        <span class="gauge-label">Confidence</span>
+                                    </div>
+                                </div>
+                                <!-- Prediction Details -->
+                                <div class="summary-details">
+                                    <div class="detail-row">
+                                        <div class="detail-icon crop-detail-icon"><i class="fas fa-leaf"></i></div>
+                                        <div>
+                                            <span class="detail-label">Crop</span>
+                                            <span class="detail-value" id="resultCrop">—</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <div class="detail-icon disease-detail-icon"><i class="fas fa-virus"></i></div>
+                                        <div>
+                                            <span class="detail-label">Condition</span>
+                                            <span class="detail-value" id="resultDisease">—</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <div class="detail-icon status-detail-icon"><i class="fas fa-info-circle"></i></div>
+                                        <div>
+                                            <span class="detail-label">Status</span>
+                                            <span class="detail-value status-badge" id="resultStatus">—</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top 3 Predictions -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title-group">
+                                    <i class="fas fa-chart-bar card-icon"></i>
+                                    <h3>Top 3 Predictions</h3>
+                                </div>
+                            </div>
+                            <div class="top3-list" id="top3List">
+                                <!-- Filled by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Advisory -->
+                        <div class="card advisory-card">
+                            <div class="card-header">
+                                <div class="card-title-group">
+                                    <i class="fas fa-clipboard-list card-icon"></i>
+                                    <h3>Management Advisory</h3>
+                                </div>
+                                <span class="advisory-badge" id="advisoryBadge"></span>
+                            </div>
+                            <div class="advisory-body" id="advisoryContent">
+                                <!-- Rendered markdown content -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== SUPPORTED CROPS ========== -->
+    <section id="crops" class="crops-section">
+        <div class="container">
+            <h2 class="section-title">Supported Crops</h2>
+            <p class="section-subtitle">Trained on 12,648 images across 19 disease classes</p>
+            <div class="crops-grid">
+                <div class="crop-info-card">
+                    <div class="crop-info-icon">🌾</div>
+                    <h3>Paddy (Rice)</h3>
+                    <div class="crop-class-count">10 Classes</div>
+                    <ul class="crop-disease-list">
+                        <li>Bacterial Leaf Blight</li>
+                        <li>Bacterial Leaf Streak</li>
+                        <li>Bacterial Panicle Blight</li>
+                        <li>Blast</li>
+                        <li>Brown Spot</li>
+                        <li>Dead Heart (Stem Borer)</li>
+                        <li>Downy Mildew</li>
+                        <li>Hispa</li>
+                        <li>Normal / Healthy</li>
+                        <li>Tungro Virus</li>
+                    </ul>
+                </div>
+                <div class="crop-info-card">
+                    <div class="crop-info-icon">🌿</div>
+                    <h3>Cotton</h3>
+                    <div class="crop-class-count">4 Classes</div>
+                    <ul class="crop-disease-list">
+                        <li>Bacterial Blight</li>
+                        <li>Leaf Curl Virus</li>
+                        <li>Fusarium Wilt</li>
+                        <li>Healthy</li>
+                    </ul>
+                </div>
+                <div class="crop-info-card">
+                    <div class="crop-info-icon">🌶️</div>
+                    <h3>Chilli</h3>
+                    <div class="crop-class-count">5 Classes</div>
+                    <ul class="crop-disease-list">
+                        <li>Cercospora Leaf Spot</li>
+                        <li>Murda Complex (Mites &amp; Thrips)</li>
+                        <li>Nutritional Deficiency</li>
+                        <li>Powdery Mildew</li>
+                        <li>Healthy</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-disclaimer">
+                <div class="disclaimer-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="disclaimer-text">
+                    <strong>Educational Disclaimer</strong>
+                    <p>This system is an AI-assisted educational project developed for the Fundamentals of Artificial Intelligence (FAI) course. It provides initial screening based on leaf image patterns and should not replace certified agricultural extension guidance.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-brand">
+                    <i class="fas fa-seedling"></i>
+                    <span>AI Crop Advisor</span>
+                </div>
+                <p class="footer-copy">FAI Project · MobileNetV2 CNN Architecture · 19 Disease Classes</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== SCRIPTS ========== -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/static/js/app.js"></script>
+
+</body>
+</html>
