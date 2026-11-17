@@ -12,12 +12,44 @@ This module handles:
 """
 
 import json
+import os
 from pathlib import Path
 import numpy as np
 from PIL import Image
-import tensorflow as tf
-from matplotlib.colors import rgb_to_hsv
-import os
+
+# Pure NumPy rgb_to_hsv (eliminates matplotlib dependency for ultra-lightweight deployment)
+def rgb_to_hsv(arr):
+    """
+    Pure NumPy implementation of rgb_to_hsv matching matplotlib.colors.rgb_to_hsv.
+    Input: array of shape (..., 3) with values in [0, 1].
+    Output: array of shape (..., 3) with HSV values in [0, 1].
+    """
+    out = np.empty_like(arr)
+    r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
+    maxc = np.maximum(np.maximum(r, g), b)
+    minc = np.minimum(np.minimum(r, g), b)
+    v = maxc
+    deltac = maxc - minc
+    s = np.zeros_like(maxc)
+    nonzero = maxc != 0
+    s[nonzero] = deltac[nonzero] / maxc[nonzero]
+    rc = np.zeros_like(r)
+    gc = np.zeros_like(g)
+    bc = np.zeros_like(b)
+    nonzero_delta = deltac != 0
+    rc[nonzero_delta] = (maxc[nonzero_delta] - r[nonzero_delta]) / deltac[nonzero_delta]
+    gc[nonzero_delta] = (maxc[nonzero_delta] - g[nonzero_delta]) / deltac[nonzero_delta]
+    bc[nonzero_delta] = (maxc[nonzero_delta] - b[nonzero_delta]) / deltac[nonzero_delta]
+    h = np.zeros_like(r)
+    h[r == maxc] = bc[r == maxc] - gc[r == maxc]
+    h[g == maxc] = 2.0 + rc[g == maxc] - bc[g == maxc]
+    h[b == maxc] = 4.0 + gc[b == maxc] - rc[b == maxc]
+    h = (h / 6.0) % 1.0
+    h[deltac == 0] = 0.0
+    out[..., 0] = h
+    out[..., 1] = s
+    out[..., 2] = v
+    return out
 
 # Constant configuration
 IMG_SIZE = (224, 224)
@@ -25,12 +57,30 @@ CONFIDENCE_THRESHOLD = 0.60  # 60% threshold for application-level confidence
 
 # Paths relative to this file
 CURRENT_DIR = Path(__file__).resolve().parent
-DEFAULT_MODEL_PATH = CURRENT_DIR / "models" / "crop_disease_model.keras"
+DEFAULT_TFLITE_PATH = CURRENT_DIR / "models" / "crop_disease_model.tflite"
+DEFAULT_KERAS_PATH = CURRENT_DIR / "models" / "crop_disease_model.keras"
+DEFAULT_MODEL_PATH = DEFAULT_TFLITE_PATH if DEFAULT_TFLITE_PATH.exists() else DEFAULT_KERAS_PATH
 DEFAULT_CLASSES_PATH = CURRENT_DIR / "models" / "class_names.json"
 
 # Cached model & classes to avoid reloading on each inference
 _CACHED_MODEL = None
 _CACHED_CLASSES = None
+
+class TFLiteModelWrapper:
+    """Lightweight wrapper for TFLite / LiteRT interpreter matching Keras model.predict() interface."""
+    def __init__(self, interpreter):
+        self.interpreter = interpreter
+        self.interpreter.allocate_tensors()
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        self.input_index = self.input_details[0]["index"]
+        self.output_index = self.output_details[0]["index"]
+
+    def predict(self, img_batch, verbose=0):
+        # img_batch expected shape: (1, 224, 224, 3) float32
+        self.interpreter.set_tensor(self.input_index, img_batch.astype(np.float32))
+        self.interpreter.invoke()
+        return self.interpreter.get_tensor(self.output_index)
 
 # Comprehensive Indian Agricultural Advisory Database for all 19 supported classes
 FALLBACK_ADVISORIES = {
@@ -716,7 +766,7 @@ Specific actions adapted to {severity} severity level:
 ### 🛡️ Safety & Regulatory Note
 Use only agricultural products legally registered/labeled for the specific crop and disease in India. Follow the product label for dose, dilution, application method, protective equipment, re-entry interval and pre-harvest interval. Do not mix pesticides unless the product labels permit the combination. Consult your State Agriculture Department, Krishi Vigyan Kendra (KVK), local agricultural extension officer, or qualified agronomist.
 """
-        response = model.generate_content(prompt)
+        response = model.generate_content(prompt, request_options={"timeout": 5.0})
         if response and hasattr(response, "text") and response.text:
             return response.text.strip()
         return None
@@ -728,29 +778,52 @@ Use only agricultural products legally registered/labeled for the specific crop 
 
 def load_model_and_classes(model_path=None, class_names_path=None):
     """
-    Loads and caches the trained MobileNetV2 Keras model and class names.
+    Loads and caches the trained MobileNetV2 model and class names.
+    Supports LiteRT / TFLite (preferred for serverless) with fallback to Keras.
     """
     global _CACHED_MODEL, _CACHED_CLASSES
 
     if _CACHED_MODEL is not None and _CACHED_CLASSES is not None:
         return _CACHED_MODEL, _CACHED_CLASSES
 
-    m_path = Path(model_path) if model_path else DEFAULT_MODEL_PATH
     c_path = Path(class_names_path) if class_names_path else DEFAULT_CLASSES_PATH
-
-    if not m_path.exists():
-        raise FileNotFoundError(f"Model file not found at: {m_path}. Please check project-fai/models/.")
-
     if not c_path.exists():
         raise FileNotFoundError(f"Class names file not found at: {c_path}.")
 
     # Load class names
-    with open(c_path, "r") as f:
+    with open(c_path, "r", encoding="utf-8") as f:
         _CACHED_CLASSES = json.load(f)
 
-    # Load Keras model
-    _CACHED_MODEL = tf.keras.models.load_model(str(m_path))
-    return _CACHED_MODEL, _CACHED_CLASSES
+    # 1. Determine model path or check for TFLite model first
+    tflite_candidate = Path(model_path) if model_path and str(model_path).endswith(".tflite") else DEFAULT_TFLITE_PATH
+    if tflite_candidate.exists():
+        Interpreter = None
+        try:
+            from ai_edge_litert.interpreter import Interpreter
+        except ImportError:
+            try:
+                from tflite_runtime.interpreter import Interpreter
+            except ImportError:
+                try:
+                    import tensorflow as tf
+                    Interpreter = tf.lite.Interpreter
+                except ImportError:
+                    pass
+
+        if Interpreter is not None:
+            interpreter = Interpreter(model_path=str(tflite_candidate))
+            _CACHED_MODEL = TFLiteModelWrapper(interpreter)
+            return _CACHED_MODEL, _CACHED_CLASSES
+
+    # 2. Fallback to Keras model if TFLite runtime not present or Keras specified
+    keras_candidate = Path(model_path) if model_path and str(model_path).endswith(".keras") else DEFAULT_KERAS_PATH
+    if keras_candidate.exists():
+        import tensorflow as tf
+        _CACHED_MODEL = tf.keras.models.load_model(str(keras_candidate))
+        return _CACHED_MODEL, _CACHED_CLASSES
+
+    m_path = Path(model_path) if model_path else DEFAULT_MODEL_PATH
+    raise FileNotFoundError(f"Neither TFLite model ({tflite_candidate}) nor Keras model ({keras_candidate}) could be loaded from: {m_path}.")
 
 
 def format_readable_label(raw_class_name):

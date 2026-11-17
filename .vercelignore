@@ -1,0 +1,18 @@
+# Ignore large dataset images and raw training files
+data/images/
+data/pdfs/
+data/train*.csv
+data/
+
+# Ignore heavy Keras model (using lightweight TFLite model instead)
+project-fai/models/crop_disease_model.keras
+project-fai/models/confusion_matrix.png
+project-fai/models/training_history.png
+
+# Python cache and environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.git/

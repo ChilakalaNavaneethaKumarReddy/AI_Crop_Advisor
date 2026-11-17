@@ -15,8 +15,12 @@ Case H: No Image Uploaded (graceful prompt)
 """
 
 import sys
+import os
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
+
+# Ensure offline deterministic reference advisory during tests
+os.environ.pop("GEMINI_API_KEY", None)
 
 from pathlib import Path
 import json
@@ -202,7 +206,9 @@ def run_tests():
 
     # Case J: Valid disease image + Invalid Gemini API key
     print("\n[*] Running Case J: Valid disease image + Invalid Gemini API key")
-    val_status, crop, disease, conf, status, top3, advisory = handle_prediction(cotton_bacterial_blight, "Black Cotton Soil", "Flowering", "High (>30%)", "INVALID_KEY_12345")
+    from unittest.mock import patch, MagicMock
+    with patch("google.generativeai.GenerativeModel.generate_content", side_effect=Exception("API key not valid. [400]")):
+        val_status, crop, disease, conf, status, top3, advisory = handle_prediction(cotton_bacterial_blight, "Black Cotton Soil", "Flowering", "High (>30%)", "INVALID_KEY_12345")
     try:
         assert crop == "Cotton"
         assert disease == "Bacterial Blight"

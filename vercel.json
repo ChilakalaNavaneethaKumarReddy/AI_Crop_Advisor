@@ -3,7 +3,15 @@
   "builds": [
     {
       "src": "project-fai/app.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "project-fai/templates/**",
+          "project-fai/static/**",
+          "project-fai/models/class_names.json",
+          "project-fai/models/crop_disease_model.tflite"
+        ]
+      }
     }
   ],
   "routes": [
